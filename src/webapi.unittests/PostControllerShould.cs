@@ -10,13 +10,8 @@ namespace WebAPI.UnitTests;
 
 [Trait("type", "unit")] //no external dependencies, marking as unit
 public class PostControllerShould
-    : IClassFixture<WebApplicationFactory<EDBlog.WebAPI.Program>>
 {
-    private readonly WebApplicationFactory<EDBlog.WebAPI.Program> clientFactory;
-    public PostControllerShould(WebApplicationFactory<EDBlog.WebAPI.Program> clientFactory)
-    {
-        this.clientFactory = clientFactory;
-    }
+    private readonly WebApplicationFactory<EDBlog.WebAPI.Program> clientFactory = new();
 
     [Theory]
     [InlineData("")]
@@ -24,8 +19,10 @@ public class PostControllerShould
     [InlineData("some-random-text-nonparseble-to-guid")]
     public async void ReturnBadRequest_WhenAuthorInvalid(string authorId)
     {
-        var client = clientFactory.CreateClient();
-
+        using var client = clientFactory            
+            .Arrange(opt =>opt.MockRequired<IMediator>())
+            .CreateClient();
+            
         var result = await client
             .PostAsync("/post", JsonFor(
                 new
@@ -34,16 +31,17 @@ public class PostControllerShould
                 }));
 
         var content = await result.Content.ReadAsStringAsync();
-
-
         result.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
         content.Should().Contain(".AuthorId"); //
+
     }
 
     [Fact]
     public async void ReturnBadRequest_WhenNoModelSent()
     {
-        var client = clientFactory.CreateClient();
+        using var client = clientFactory            
+            .Arrange(opt =>opt.MockRequired<IMediator>())
+            .CreateClient();
 
         var result = await client
             .PostAsync("/post", new StringContent("", Encoding.UTF8, "application/json"));
@@ -57,7 +55,9 @@ public class PostControllerShould
     [InlineData(null)]
     public async void ReturnBadRequest_WhenTitleInvalid(string title)
     {
-        var client = clientFactory.CreateClient();
+        using var client = clientFactory
+            .Arrange(opt =>opt.MockRequired<IMediator>())
+            .CreateClient();
 
         var result = await client
             .PostAsync("/post", JsonFor(
