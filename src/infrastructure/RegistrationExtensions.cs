@@ -2,6 +2,9 @@ using System.Reflection;
 using EDBlog.Infrastructure.RabbitMQ;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 namespace EDBlog.Infrastructure;
 
@@ -51,6 +54,39 @@ public static class RegistrationExtensions
                 cfg.ConfigureEndpoints(context);
             });
         });
+
+        return services;
+    }
+
+//ToDo: cleanup parameters
+    public static IServiceCollection SetupOpenTelemetry(
+        this IServiceCollection services,
+        string serviceName,
+        string serviceVersion,
+        Uri? zipkinEndpoint,
+        bool addAspNetInstrumentation = false)
+    {
+        services
+            .AddOpenTelemetry()
+            .WithTracing(options =>
+            {
+                options
+                    .AddSource(serviceName)
+                    .AddSource("MassTransit")
+                    .AddConsoleExporter()
+                    .AddZipkinExporter(opt =>
+                    {
+                        if (zipkinEndpoint != null)
+                            opt.Endpoint = zipkinEndpoint;
+                    })
+                    .SetResourceBuilder(ResourceBuilder
+                            .CreateDefault()
+                            .AddService(serviceName: serviceName, serviceVersion: serviceVersion));
+                    
+                if (addAspNetInstrumentation)
+                    options.AddAspNetCoreInstrumentation();
+            })
+            .StartWithHost();
 
         return services;
     }

@@ -27,6 +27,15 @@ public class Program
 
         builder.Services.SetupPublisher(rabbitConfig);
 
+        // Setup Open Telemetry
+        var zipkinUri = builder.Configuration
+            .GetValue<Uri>("ZipkinEndpoint");
+
+        builder.Services.SetupOpenTelemetry(
+            serviceName: "WebAPI",
+            serviceVersion: "1",
+            zipkinEndpoint: zipkinUri,
+            addAspNetInstrumentation: true);
 
         var app = builder.Build();
 

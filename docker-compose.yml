@@ -1,6 +1,15 @@
 version: "3.6"
 
 services:
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+    healthcheck:
+      test: "wget --no-verbose --tries=1 --spider http://localhost:9411/zipkin/"
+      interval: 5s
+      timeout: 5s
+      retries: 5
   rabbitmq:
     image: masstransit/rabbitmq:latest
     ports:
@@ -8,18 +17,25 @@ services:
       - "15672:15672"
       - "15692:15692"
     healthcheck:
-      test: rabbitmq-diagnostics -q ping
-      interval: 30s
-      timeout: 30s
-      retries: 3
+      test: "wget --no-verbose --tries=1 --spider http://localhost:15672"
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      zipkin:
+        condition: service_healthy
   worker:
     build:
       context: ./src
       dockerfile: worker-dockerfile
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
+      zipkin:
+        condition: service_healthy
     links: 
       - rabbitmq
+      - zipkin
     environment:
       - ASPNETCORE_ENVIRONMENT=DevContainer
   webapi:
@@ -27,9 +43,13 @@ services:
       context: ./src
       dockerfile: webapi-dockerfile
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
+      zipkin:
+        condition: service_healthy
     links: 
       - rabbitmq
+      - zipkin
     ports:
       - "8080:80"
     environment:
