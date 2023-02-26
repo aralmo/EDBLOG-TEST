@@ -79,24 +79,24 @@ public class PostControllerShould
     public async void Publish_NewPostCommand()
     {
         //arrange
-        Mock<IMediator> mediator = null!; 
+        Mock<IMediator> mediator = null!;
+
         var client = clientFactory
-            .Arrange(opt => 
+            .Arrange(opt =>
             {
                 mediator = opt.MockRequired<IMediator>();
                 mediator
                     .Setup(m => m.Publish<CreatePostCommand>(It.IsAny<CreatePostCommand>()))
                     .Returns(Task.CompletedTask)
                     .Verifiable();
-
             })
             .CreateClient();
-        
+
         //act and assert
-        await client.PostAsync("post",JsonFor(new 
+        await client.PostAsync("post", JsonFor(new
         {
             AuthorId = Guid.NewGuid(),
-            Post = new 
+            Post = new
             {
                 Title = "new post title",
                 Description = "new post description",
@@ -105,6 +105,17 @@ public class PostControllerShould
         }));
 
         mediator.Verify();
+
+        //get the published command and assert
+        var command = (CreatePostCommand)mediator.Invocations.First().Arguments[0];
+        command.AuthorId.Should().NotBeEmpty();
+        command.PostId.Should().NotBeEmpty();
+        command.Should().BeEquivalentTo(new
+        {
+            Title = "new post title",
+            Description = "new post description",
+            Content = "new post content"
+        });
     }
 
     static HttpContent JsonFor(object request)

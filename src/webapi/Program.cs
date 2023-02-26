@@ -1,3 +1,4 @@
+using EDBlog.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
@@ -18,6 +19,9 @@ public class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+
+        // Setups publishing mediator
+        builder.Services.SetupPublisher();
 
         var app = builder.Build();
 
