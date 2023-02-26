@@ -8,10 +8,20 @@ services:
       - "15672:15672"
       - "15692:15692"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:15672"]
-      interval: 5s
-      timeout: 10s
-      retries: 20
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
+  worker:
+    build:
+      context: ./src
+      dockerfile: worker-dockerfile
+    depends_on:
+      - rabbitmq
+    links: 
+      - rabbitmq
+    environment:
+      - ASPNETCORE_ENVIRONMENT=DevContainer
   webapi:
     build:
       context: ./src
@@ -19,7 +29,7 @@ services:
     depends_on:
       - rabbitmq
     links: 
-        - rabbitmq
+      - rabbitmq
     ports:
       - "8080:80"
     environment:
