@@ -1,8 +1,10 @@
-
 using System.Text;
 using System.Text.Json;
+using EDBlog.Core.Abstractions;
+using EDBlog.Domain.Contracts;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Moq;
 
 namespace WebAPI.UnitTests;
 
@@ -26,7 +28,7 @@ public class PostControllerShould
 
         var result = await client
             .PostAsync("/post", JsonFor(
-                new 
+                new
                 {
                     AuthorId = authorId
                 }));
@@ -44,7 +46,7 @@ public class PostControllerShould
         var client = clientFactory.CreateClient();
 
         var result = await client
-            .PostAsync("/post",new StringContent("", Encoding.UTF8, "application/json"));
+            .PostAsync("/post", new StringContent("", Encoding.UTF8, "application/json"));
 
         var content = await result.Content.ReadAsStringAsync();
         result.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
@@ -59,10 +61,11 @@ public class PostControllerShould
 
         var result = await client
             .PostAsync("/post", JsonFor(
-                new 
+                new
                 {
-                    AuthorId = Guid.NewGuid().ToString(), 
-                    Post = new {
+                    AuthorId = Guid.NewGuid().ToString(),
+                    Post = new
+                    {
                         Title = title
                     }
                 }));
@@ -70,6 +73,38 @@ public class PostControllerShould
         var content = await result.Content.ReadAsStringAsync();
         result.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
         content.Should().Contain(".Title"); //
+    }
+
+    [Fact]
+    public async void Publish_NewPostCommand()
+    {
+        //arrange
+        Mock<IMediator> mediator = null!; 
+        var client = clientFactory
+            .Arrange(opt => 
+            {
+                mediator = opt.MockRequired<IMediator>();
+                mediator
+                    .Setup(m => m.Publish<CreatePostCommand>(It.IsAny<CreatePostCommand>()))
+                    .Returns(Task.CompletedTask)
+                    .Verifiable();
+
+            })
+            .CreateClient();
+        
+        //act and assert
+        await client.PostAsync("post",JsonFor(new 
+        {
+            AuthorId = Guid.NewGuid(),
+            Post = new 
+            {
+                Title = "new post title",
+                Description = "new post description",
+                Content = "new post content"
+            }
+        }));
+
+        mediator.Verify();
     }
 
     static HttpContent JsonFor(object request)

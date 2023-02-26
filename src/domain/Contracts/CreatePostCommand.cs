@@ -1,7 +1,7 @@
 using EDBlog.Domain.Entities;
-namespace Domain.Contracts;
+namespace EDBlog.Domain.Contracts;
 
-public interface CreatePostCommand
+public interface CreatePostCommand : ICommand
 {
     Guid AuthorId {get;}
     Post Post {get; }
