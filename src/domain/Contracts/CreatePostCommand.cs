@@ -4,5 +4,8 @@ namespace EDBlog.Domain.Contracts;
 public interface CreatePostCommand : ICommand
 {
     Guid AuthorId {get;}
-    Post Post {get; }
+    Guid PostId {get;}
+    string Title{get;}
+    string? Description {get;}
+    string? Content {get;}
 }
