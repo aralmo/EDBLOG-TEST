@@ -1,15 +1,49 @@
 using EDBlog.Core.Abstractions;
-using EDBlog.Infrastructure.MassTransit;
+using EDBlog.Infrastructure;
+using MassTransit;
+using Moq;
 
 namespace EDBlog.Tests.Infrastructure;
 
 public class MassTransitMediatorShould
 {
-    IMediator mediator = new MassTransitMediator();
+    [Fact]
+    public async void PublishThrough_MassTransitPublishEndpoint()
+    {
+        //arrange
+        var publishEndpointMock = new Mock<IPublishEndpoint>();
+
+        publishEndpointMock
+            .Setup(pem => pem.Publish(It.IsAny<object>(),It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask)
+            .Verifiable();
+        
+        IMediator mediator = new MassTransitMediator(publishEndpointMock.Object);
+
+        //act and verify
+        await mediator.Publish(new FakeCmd());
+        publishEndpointMock.Verify();
+    }
 
     [Fact]
-    public void Test1()
+    public async void PropagateCancellation_ToMassTransitPublishEndpoint()
     {
-        throw new NotImplementedException();
+        //arrange
+        var publishEndpointMock = new Mock<IPublishEndpoint>();
+        CancellationToken ctoken = new CancellationToken();
+
+        publishEndpointMock
+            .Setup(pem => pem.Publish(It.IsAny<object>(),ctoken))
+            .Returns(Task.CompletedTask)
+            .Verifiable();
+        
+        IMediator mediator = new MassTransitMediator(publishEndpointMock.Object);
+
+        //act and verify
+        await mediator.Publish(new FakeCmd(),ctoken);
+        publishEndpointMock.Verify();
     }
+
+
+    record FakeCmd() : ICommand;
 }

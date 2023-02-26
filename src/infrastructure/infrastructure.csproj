@@ -13,4 +13,8 @@
   <ItemGroup>
     <ProjectReference Include="..\core.abstractions\core.abstractions.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="masstransit" Version="8.0.13" />
+  </ItemGroup>
 </Project>

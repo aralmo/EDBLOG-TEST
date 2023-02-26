@@ -1,9 +1,18 @@
-namespace EDBlog.Infrastructure.MassTransit;
+namespace EDBlog.Infrastructure;
+using MassTransit;
 
 internal class MassTransitMediator : IMediator
 {
-    public void Publish<TMessage>(TMessage message) where TMessage : ICommand
+    private readonly IPublishEndpoint publishEndpoint;
+
+    public MassTransitMediator(IPublishEndpoint publishEndpoint)
     {
-        throw new NotImplementedException();
+        this.publishEndpoint = publishEndpoint;
     }
+
+    public Task Publish<TMessage>(TMessage message) where TMessage : ICommand
+    => publishEndpoint.Publish(message);
+
+    public Task Publish<TMessage>(TMessage message,CancellationToken cancellation) where TMessage : ICommand
+    => publishEndpoint.Publish(message,cancellation);
 }
