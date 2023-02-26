@@ -1,4 +1,4 @@
-//ToDo: move to infrastructure abstractions?
+namespace EDBlog.Core.Abstractions;
 
 ///<summary>
 /// This interface needs to be used to decorate all commands.

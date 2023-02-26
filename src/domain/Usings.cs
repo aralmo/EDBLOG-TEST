@@ -1,0 +1,1 @@
+global using EDBlog.Core.Abstractions;

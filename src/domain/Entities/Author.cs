@@ -1,4 +1,4 @@
-namespace Domain.Entities;
+namespace EDBlog.Domain.Entities;
 
 public interface Author : IEntity
 {

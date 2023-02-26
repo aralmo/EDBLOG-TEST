@@ -1,4 +1,4 @@
-//ToDo: move to infrastructure abstractions?
+namespace EDBlog.Core.Abstractions;
 
 public interface IMediator
 {
