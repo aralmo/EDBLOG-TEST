@@ -1,15 +1,12 @@
 
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using EDBlog.WebAPI.Controllers;
 using FluentAssertions;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc.Testing;
 
-[Trait("type", "integration")]
+namespace WebAPI.UnitTests;
+
+[Trait("type", "unit")] //no external dependencies, marking as unit
 public class PostControllerShould
     : IClassFixture<WebApplicationFactory<EDBlog.WebAPI.Program>>
 {
@@ -23,7 +20,7 @@ public class PostControllerShould
     [InlineData("")]
     [InlineData(null)]
     [InlineData("some-random-text-nonparseble-to-guid")]
-    public async void Return_BadRequest_IfAuthorInvalid(string authorId)
+    public async void ReturnBadRequest_WhenAuthorInvalid(string authorId)
     {
         var client = clientFactory.CreateClient();
 
@@ -42,7 +39,7 @@ public class PostControllerShould
     }
 
     [Fact]
-    public async void Return_BadRequest_IfNoModelSent()
+    public async void ReturnBadRequest_WhenNoModelSent()
     {
         var client = clientFactory.CreateClient();
 
@@ -56,7 +53,7 @@ public class PostControllerShould
     [Theory]
     [InlineData("less/10")]
     [InlineData(null)]
-    public async void Return_BadRequest_IfTitleInvalid(string title)
+    public async void ReturnBadRequest_WhenTitleInvalid(string title)
     {
         var client = clientFactory.CreateClient();
 

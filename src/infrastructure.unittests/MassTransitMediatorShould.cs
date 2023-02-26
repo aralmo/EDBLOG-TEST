@@ -3,8 +3,9 @@ using EDBlog.Infrastructure;
 using MassTransit;
 using Moq;
 
-namespace EDBlog.Tests.Infrastructure;
+namespace Infrastructure.UnitTests;
 
+[Trait("type", "unit")]
 public class MassTransitMediatorShould
 {
     [Fact]
