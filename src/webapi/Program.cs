@@ -20,8 +20,13 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        // Setups publishing mediator
-        builder.Services.SetupPublisher();
+        // Setups publishing bus and mediator
+        var rabbitConfig = builder.Configuration
+            .GetRequiredSection("RabbitMQ")
+            .Get<Infrastructure.RabbitMQ.RabbitMQConfiguration>();
+
+        builder.Services.SetupPublisher(rabbitConfig);
+
 
         var app = builder.Build();
 

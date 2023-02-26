@@ -80,8 +80,7 @@ public class PostControllerShould
     {
         //arrange
         Mock<IMediator> mediator = null!;
-
-        var client = clientFactory
+        using var client = clientFactory
             .Arrange(opt =>
             {
                 mediator = opt.MockRequired<IMediator>();
@@ -106,8 +105,9 @@ public class PostControllerShould
 
         mediator.Verify();
 
-        //get the published command and assert
-        var command = (CreatePostCommand)mediator.Invocations.First().Arguments[0];
+        //get the published command and ensures it's single invocation
+        var command = (CreatePostCommand)mediator.Invocations.Single(i => i.IsVerified).Arguments[0];
+
         command.AuthorId.Should().NotBeEmpty();
         command.PostId.Should().NotBeEmpty();
         command.Should().BeEquivalentTo(new
