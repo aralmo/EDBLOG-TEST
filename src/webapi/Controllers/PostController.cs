@@ -16,11 +16,11 @@ public class PostController : Controller
     }
 
     [HttpPost]
-    public IResult POST([FromBody] NewPostRequest request, CancellationToken cancellationToken)
+    public async Task<IResult> POST([FromBody] NewPostRequest request, CancellationToken cancellationToken)
     {
         //since it's ED, author id should either be from an auth token or validated for existance
         //for this test, if the author doesn't exist will return a placeholder one
-        mediator.Publish<CreatePostCommand>(new CreatePostContract()
+        await mediator.Publish<CreatePostCommand>(new CreatePostContract()
         {
             AuthorId = request.AuthorId,
             PostId = Guid.NewGuid(),
