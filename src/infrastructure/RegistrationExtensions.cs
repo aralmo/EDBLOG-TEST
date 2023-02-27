@@ -23,8 +23,9 @@ public static class RegistrationExtensions
                     rhcfg.Username(rabbitMQConfiguration.User ?? "guest");
                     rhcfg.Password(rabbitMQConfiguration.Password ?? "guest");
                 });
+                rcfg.ConfigureEndpoints(ctx);
             });
-        });
+        });        
 
         services.AddScoped<IMediator, MassTransitMediator>();
         return services;
