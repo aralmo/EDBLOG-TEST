@@ -7,30 +7,45 @@ namespace EDBlog.Worker.Consumers;
 
 public class CreatePostCommandConsumer : IConsumer<CreatePostCommand>
 {
-    readonly ILogger<CreatePostCommandConsumer> _logger;
+    const string NEWPOST_EVENT_NAME = "NewPost";
     private readonly EventStoreClient client;
 
-    public CreatePostCommandConsumer(ILogger<CreatePostCommandConsumer> logger, EventStoreClient eventStoreClient)
+    public CreatePostCommandConsumer(EventStoreClient eventStoreClient)
     {
-        _logger = logger;
         this.client = eventStoreClient;
     }
 
     public Task Consume(ConsumeContext<CreatePostCommand> context)
-    {
-        _logger.LogInformation("Received New Post: {Title}", context.Message.Title);
-        
-        return client.AppendToStreamAsync(
-            $"authorposts-{context.Message.AuthorId}",
-            StreamState.Any,
-            new[]{
-            new EventData(
-				Uuid.NewUuid(),
-				"NewPost",
-				JsonSerializer.SerializeToUtf8Bytes(new {
-                    context.Message.Title,
-                    context.Message.Description
-                })
-			)});
-    }
+        => Task.WhenAll(new[]{
+
+                // create an entry in the author stream to track author posts
+                client.AppendToStreamAsync(
+                    $"authorposts-{context.Message.AuthorId}",
+                    StreamState.Any,
+                    new[]{
+                    new EventData(
+                        Uuid.NewUuid(),
+                        NEWPOST_EVENT_NAME,
+                        JsonSerializer.SerializeToUtf8Bytes(new {
+                            context.Message.PostId,
+                            context.Message.Title,
+                            context.Message.Description
+                        })
+                    )}),
+
+                // create an entry for the specific post stream to track changes
+                client.AppendToStreamAsync(
+                    $"post-{context.Message.PostId}",
+                    StreamState.Any,
+                    new[]{
+                    new EventData(
+                        Uuid.NewUuid(),
+                        NEWPOST_EVENT_NAME,
+                        JsonSerializer.SerializeToUtf8Bytes(new {
+                            context.Message.AuthorId,
+                            context.Message.Title,
+                            context.Message.Description,
+                            context.Message.Content
+                        })
+                    )})});
 }

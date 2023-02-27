@@ -7,18 +7,19 @@ using FluentAssertions;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace IntegrationTests;
+namespace IntegrationTests.Service;
 
 public class CreatePostCommandConsumerShould
 {
     ServiceProvider serviceProvider;
-    CreatePostCommandConsumer consumer 
+    CreatePostCommandConsumer consumer
         => serviceProvider
             .GetRequiredService<CreatePostCommandConsumer>();
 
     public CreatePostCommandConsumerShould()
     {
         var services = new ServiceCollection();
+            //run docker compose up in this project root to start dependencies.
         services.AddEventStoreClient("esdb://admin:changeit@localhost:2213?tls=false");
         services.AddLogging();
         services.AddTransient<CreatePostCommandConsumer>();
@@ -31,32 +32,80 @@ public class CreatePostCommandConsumerShould
         //Arrange
         var esClient = serviceProvider.GetRequiredService<EventStoreClient>();
         var contract = new Contract()
-            {
-                AuthorId = Guid.NewGuid(),
-                PostId = Guid.NewGuid(),
-                Title = "new post title",
-                Description = "new post description",
-                Content = "new post content"
-            };
-        
+        {
+            AuthorId = Guid.NewGuid(),
+            PostId = Guid.NewGuid(),
+            Title = "new post title",
+            Description = "new post description",
+            Content = "new post content"
+        };
+
         //Act
-        await consumer.Consume(new FakeConsumeContext<CreatePostCommand>(contract)); 
+        await consumer.Consume(new FakeConsumeContext<CreatePostCommand>(contract));
 
         //Assert
-        var reader = esClient.ReadStreamAsync(
-            Direction.Forwards, 
+        var authorReader = esClient.ReadStreamAsync(
+            Direction.Forwards,
             $"authorposts-{contract.AuthorId}",
             StreamPosition.Start);
-        
-        var item = await reader.FirstAsync();
-        item.Should().NotBeNull();        
 
+            // the author stream tracks author posts
+        var authorStreamEvent = await authorReader.FirstAsync();
+        authorStreamEvent.Should().NotBeNull();
+        authorStreamEvent.Event?.EventType?.Should().Be("NewPost");
+
+            // check the contents
         Encoding.UTF8
-            .GetString(item.Event.Data.ToArray())
+            .GetString(authorStreamEvent.Event!.Data.ToArray())
             .Should()
-            .Be("{\"Title\":\"new post title\",\"Description\":\"new post description\"}");
+            .Be(JsonSerializer.Serialize(new
+                {
+                    contract.PostId,
+                    contract.Title,
+                    contract.Description
+                }));
     }
 
+     [Fact]
+    public async void CreateEvent_InPostStream()
+    {
+        //Arrange
+        var esClient = serviceProvider.GetRequiredService<EventStoreClient>();
+        var contract = new Contract()
+        {
+            AuthorId = Guid.NewGuid(),
+            PostId = Guid.NewGuid(),
+            Title = "new post title",
+            Description = "new post description",
+            Content = "new post content"
+        };
+
+        //Act
+        await consumer.Consume(new FakeConsumeContext<CreatePostCommand>(contract));
+
+        //Assert
+        var postReader = esClient.ReadStreamAsync(
+            Direction.Forwards,
+            $"post-{contract.PostId}",
+            StreamPosition.Start);
+
+        var postStreamEvent = await postReader.FirstAsync();
+        postStreamEvent.Should().NotBeNull();
+        postStreamEvent.Event?.EventType?.Should().Be("NewPost");
+        
+            // check the contents
+        Encoding.UTF8
+            .GetString(postStreamEvent.Event!.Data.ToArray())
+            .Should()
+            .Be(JsonSerializer.Serialize(new
+                {
+                    contract.AuthorId,
+                    contract.Title,
+                    contract.Description,
+                    contract.Content
+                }));
+
+    }
 
     class Contract : CreatePostCommand
     {
