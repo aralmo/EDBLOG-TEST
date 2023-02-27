@@ -9,7 +9,7 @@ using Moq;
 namespace WebAPI.UnitTests;
 
 [Trait("type", "unit")] //no external dependencies, marking as unit
-public class PostControllerShould
+public class NewPostControllerShould
 {
     private readonly WebApplicationFactory<EDBlog.WebAPI.Program> clientFactory = new();
 

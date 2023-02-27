@@ -2,20 +2,20 @@ using System.ComponentModel.DataAnnotations;
 using EDBlog.Core.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 using EDBlog.Domain.Contracts;
+using MassTransit;
 
 namespace EDBlog.WebAPI.Controllers;
 
-[Route("post")]
-public class PostController : Controller
+public class NewPostController : Controller
 {
     private readonly IMediator mediator;
 
-    public PostController(IMediator mediator)
+    public NewPostController(IMediator mediator)
     {
         this.mediator = mediator;
     }
 
-    [HttpPost]
+    [HttpPost, Route("post")]
     public async Task<IResult> POST([FromBody] NewPostRequest request, CancellationToken cancellationToken)
     {
         //since it's ED, author id should either be from an auth token or validated for existance
@@ -31,10 +31,6 @@ public class PostController : Controller
 
         return Results.Accepted();
     }
-
-    [HttpGet, Route("{postId}")]
-    public IResult GET(Guid postId)
-        => throw new NotImplementedException();
 
     //Contracts
     internal record CreatePostContract : CreatePostCommand
