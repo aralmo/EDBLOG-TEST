@@ -7,7 +7,7 @@ using FluentAssertions;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace IntegrationTests.Service;
+namespace Integration.Service;
 
 public class CreatePostCommandConsumerShould
 {

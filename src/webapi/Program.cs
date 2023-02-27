@@ -1,6 +1,6 @@
+using EDBlog.Domain.Contracts;
 using EDBlog.Infrastructure;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using MassTransit;
 
 namespace EDBlog.WebAPI;
 
@@ -38,7 +38,7 @@ public class Program
             addAspNetInstrumentation: true);
 
         var app = builder.Build();
-
+        
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
