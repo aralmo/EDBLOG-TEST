@@ -34,8 +34,8 @@ public class NewPostController : Controller
 
         return Results.Accepted(value: new
         {
-            PostId = postId.ToString(),
-            TraceId = Activity.Current?.TraceId.ToString()
+            PostId = postId,
+            TraceId = Activity.Current?.TraceId
         });
     }
 
