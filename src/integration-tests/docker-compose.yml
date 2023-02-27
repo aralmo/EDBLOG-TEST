@@ -1,0 +1,35 @@
+services:
+  eventstoredb:
+    image: eventstore/eventstore
+    environment:
+      - EVENTSTORE_INSECURE=true
+      - EVENTSTORE_EXT_TCP_PORT=1113
+      - EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP=true
+    ports:
+      - "1213:1113"
+      - "2213:2113"
+    healthcheck:
+      test: "wget --no-verbose --tries=1 --spider http://localhost:2213"
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+    healthcheck:
+      test: "wget --no-verbose --tries=1 --spider http://localhost:9411/zipkin/"
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  rabbitmq:
+    image: masstransit/rabbitmq:latest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "15692:15692"
+    healthcheck:
+      test: "wget --no-verbose --tries=1 --spider http://localhost:15672"
+      interval: 5s
+      timeout: 5s
+      retries: 5
