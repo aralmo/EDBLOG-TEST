@@ -4,12 +4,12 @@ WORKDIR /src
 # Copy everything
 COPY . ./
 # Restore as distinct layers
-RUN dotnet restore worker
+RUN dotnet restore service
 # Build and publish a release
-RUN dotnet publish worker -c Release -o out
+RUN dotnet publish service -c Release -o out
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:6.0
 WORKDIR /src
 COPY --from=build-env /src/out .
-ENTRYPOINT ["dotnet", "worker.dll"]
+ENTRYPOINT ["dotnet", "service.dll"]

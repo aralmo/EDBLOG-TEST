@@ -6,7 +6,6 @@ public interface Post : IEntity
     /// Identifier for the post author.
     /// </summary>
     public Guid AuthorId {get;}
-
     /// <summary>
     /// Post title to be shown in post lists.
     /// </summary>

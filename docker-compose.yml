@@ -21,10 +21,10 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-  worker:
+  service:
     build:
       context: ./src
-      dockerfile: worker-dockerfile
+      dockerfile: service-dockerfile
     depends_on:
       rabbitmq:
         condition: service_healthy
