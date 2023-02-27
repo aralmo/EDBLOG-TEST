@@ -19,7 +19,7 @@ public class MassTransitMediatorShould
             .Returns(Task.CompletedTask)
             .Verifiable();
         
-        IMediator mediator = new MassTransitMediator(publishEndpointMock.Object);
+        IMediator mediator = new MassTransitMediator(publishEndpointMock.Object, null!);
 
         //act and verify
         await mediator.Publish(new FakeCmd());
@@ -38,12 +38,16 @@ public class MassTransitMediatorShould
             .Returns(Task.CompletedTask)
             .Verifiable();
         
-        IMediator mediator = new MassTransitMediator(publishEndpointMock.Object);
+        IMediator mediator = new MassTransitMediator(publishEndpointMock.Object, null!);
 
         //act and verify
         await mediator.Publish(new FakeCmd(),ctoken);
         publishEndpointMock.Verify();
     }
+
+    interface some{}
+    interface somein:some{}
+    class x:somein{}
 
 
     record FakeCmd() : ICommand;

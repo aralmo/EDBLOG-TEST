@@ -4,6 +4,7 @@ namespace EDBlog.Core.Abstractions;
 /// Represents a request-respond saga initiator.
 ///</summary>
 public interface IRequestFor<TResponse>
+    where TResponse : class
 {
     
 }
