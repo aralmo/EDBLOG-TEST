@@ -1,5 +1,6 @@
 using EDBlog.Infrastructure;
 using EDBlog.Infrastructure.RabbitMQ;
+using EventStore.Client;
 
 namespace EDBlog.Worker;
 
@@ -14,12 +15,21 @@ public class Program
         Host.CreateDefaultBuilder(args)
             .ConfigureServices((hostContext, services) =>
             {
+                //setup eventstoredb
+                var esConnString = hostContext.Configuration
+                        .GetRequiredSection("EventStoreDB")
+                        .GetValue<string>("ConnectionString");
+                        
+                services.AddEventStoreClient(esConnString);
+                
+                //setup rabbitmq and masstransit
                 var rabbitCfg = hostContext.Configuration
                         .GetRequiredSection("RabbitMQ")
                         .Get<RabbitMQConfiguration>();
 
                 services.SetupConsumers(rabbitCfg, typeof(Program).Assembly);
 
+                //setup opentelemetry
                 var zipkinUri = hostContext.Configuration
                     .GetValue<Uri>("ZipkinEndpoint");
                     
