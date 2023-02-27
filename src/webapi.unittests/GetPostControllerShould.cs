@@ -3,6 +3,7 @@ using System.Text.Json;
 using EDBlog.Core.Abstractions;
 using EDBlog.Domain.Contracts;
 using EDBlog.Domain.Entities;
+using EDBlog.WebAPI;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Moq;
@@ -23,7 +24,7 @@ public class GetPostControllerShould
             {
                 mediator = opt.MockRequired<IMediator>();
                 mediator
-                    .Setup(m => m.Request<GetPostRequest, GetPostResponse>(It.IsAny<GetPostRequest>()))
+                    .Setup(m => m.Request<GetPostRequestContract, GetPostResponseContract>(It.IsAny<GetPostRequestContract>()))
                     .ReturnsAsync(new fakeResponse());
             })
             .CreateClient();
@@ -37,28 +38,42 @@ public class GetPostControllerShould
     public async void ReturnProperPostFormat_WhenExists()
     {
         Mock<IMediator>? mediator = null;
+        var fakeResponse = new fakeResponse()
+        {
+            Found = true,
+            Post = new fakePost()
+            {
+                AuthorId = Guid.NewGuid(),
+                Content = "post content",
+                Description = "post description",
+                Title = "post title"
+            }
+        };
+
         using var client = clientFactory
             .Arrange(opt =>
             {
                 mediator = opt.MockRequired<IMediator>();
                 mediator
-                    .Setup(m => m.Request<GetPostRequest, GetPostResponse>(It.IsAny<GetPostRequest>()))
-                    .ReturnsAsync(new fakeResponse()
-                    {
-                        Found = true,
-                        Post = new fakePost()
-                        {
-                            AuthorId = Guid.NewGuid(),
-                            Content = "post content",
-                            Description = "post description", 
-                            Title = "post title"
-                        }});
+                    .Setup(m => m.Request<GetPostRequestContract, GetPostResponseContract>(It.IsAny<GetPostRequestContract>()))
+                    .ReturnsAsync(fakeResponse);
             })
             .CreateClient();
 
         var r = await client.GetAsync($"/post/{Guid.Empty}");
         r.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        string contentString = await r.Content.ReadAsStringAsync();
+        var content = JsonSerializer.Deserialize<getpostResponse>(contentString, serializerOptions);
 
+        content.Should().BeEquivalentTo(new getpostResponse()
+        {
+            Title = fakeResponse.Post.Title,
+            Content = fakeResponse.Post.Content,
+            Links = new[]{
+                new Link($"/author/{fakeResponse.Post.AuthorId}", "post author", HttpMethod.Get)
+            },
+            Description = fakeResponse.Post.Description
+        });
     }
 
     [Fact]
@@ -70,7 +85,7 @@ public class GetPostControllerShould
             {
                 mediator = opt.MockRequired<IMediator>();
                 mediator
-                    .Setup(m => m.Request<GetPostRequest, GetPostResponse>(It.IsAny<GetPostRequest>()))
+                    .Setup(m => m.Request<GetPostRequestContract, GetPostResponseContract>(It.IsAny<GetPostRequestContract>()))
                     .ReturnsAsync(new fakeResponse()
                     {
                         Found = true,
@@ -78,7 +93,7 @@ public class GetPostControllerShould
                         {
                             AuthorId = Guid.NewGuid(),
                             Content = "post content",
-                            Description = "post description", 
+                            Description = "post description",
                             Title = "post title"
                         }
                     })
@@ -91,8 +106,20 @@ public class GetPostControllerShould
         mediator!.Verify();
     }
 
+    JsonSerializerOptions serializerOptions = new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
 
-    class fakeResponse : GetPostResponse
+    record getpostResponse
+    {
+        public string? Title { get; init; }
+        public string? Description { get; init; }
+        public string? Content { get; init; }
+        public IEnumerable<Link>? Links { get; init; }
+    }
+
+    class fakeResponse : GetPostResponseContract
     {
         public bool Found { get; set; }
         public Post? Post { get; set; }
@@ -100,7 +127,7 @@ public class GetPostControllerShould
     class fakePost : Post
     {
         public Guid AuthorId { get; set; }
-        public string Title { get; set; }
+        public required string Title { get; set; }
         public string? Description { get; set; }
         public string? Content { get; set; }
         public Guid Identifier { get; set; }

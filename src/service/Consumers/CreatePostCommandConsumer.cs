@@ -5,7 +5,7 @@ using MassTransit;
 
 namespace EDBlog.Worker.Consumers;
 
-public class CreatePostCommandConsumer : IConsumer<CreatePostCommand>
+public class CreatePostCommandConsumer : IConsumer<CreatePostCommandContract>
 {
     const string NEWPOST_EVENT_NAME = "NewPost";
     private readonly EventStoreClient client;
@@ -15,7 +15,7 @@ public class CreatePostCommandConsumer : IConsumer<CreatePostCommand>
         this.client = eventStoreClient;
     }
 
-    public Task Consume(ConsumeContext<CreatePostCommand> context)
+    public Task Consume(ConsumeContext<CreatePostCommandContract> context)
         => Task.WhenAll(new[]{
 
                 // create an entry in the author stream to track author posts

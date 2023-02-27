@@ -41,7 +41,7 @@ public class CreatePostCommandConsumerShould
         };
 
         //Act
-        await consumer.Consume(new FakeConsumeContext<CreatePostCommand>(contract));
+        await consumer.Consume(new FakeConsumeContext<CreatePostCommandContract>(contract));
 
         //Assert
         var authorReader = esClient.ReadStreamAsync(
@@ -81,7 +81,7 @@ public class CreatePostCommandConsumerShould
         };
 
         //Act
-        await consumer.Consume(new FakeConsumeContext<CreatePostCommand>(contract));
+        await consumer.Consume(new FakeConsumeContext<CreatePostCommandContract>(contract));
 
         //Assert
         var postReader = esClient.ReadStreamAsync(
@@ -107,7 +107,7 @@ public class CreatePostCommandConsumerShould
 
     }
 
-    class Contract : CreatePostCommand
+    class Contract : CreatePostCommandContract
     {
         public Guid AuthorId { get; set; }
 

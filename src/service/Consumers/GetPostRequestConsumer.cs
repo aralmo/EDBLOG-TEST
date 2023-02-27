@@ -2,16 +2,16 @@ using EDBlog.Domain.Contracts;
 using MassTransit;
 
 public class GetPostRequestConsumer : 
-    IConsumer<GetPostRequest>
+    IConsumer<GetPostRequestContract>
 {
 
     public GetPostRequestConsumer()
     {
     }
 
-    public async Task Consume(ConsumeContext<GetPostRequest> context)
+    public async Task Consume(ConsumeContext<GetPostRequestContract> context)
     {
-        await context.RespondAsync<GetPostResponse>(new {
+        await context.RespondAsync<GetPostResponseContract>(new {
             Found = false
         });
     }

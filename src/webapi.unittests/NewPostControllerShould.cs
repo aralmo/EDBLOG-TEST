@@ -85,7 +85,7 @@ public class NewPostControllerShould
             {
                 mediator = opt.MockRequired<IMediator>();
                 mediator
-                    .Setup(m => m.Publish<CreatePostCommand>(It.IsAny<CreatePostCommand>()))
+                    .Setup(m => m.Publish<CreatePostCommandContract>(It.IsAny<CreatePostCommandContract>()))
                     .Returns(Task.CompletedTask)
                     .Verifiable();
             })
@@ -106,7 +106,7 @@ public class NewPostControllerShould
         mediator.Verify();
 
         //get the published command and ensures it's single invocation
-        var command = (CreatePostCommand)mediator.Invocations.Single(i => i.IsVerified).Arguments[0];
+        var command = (CreatePostCommandContract)mediator.Invocations.Single(i => i.IsVerified).Arguments[0];
 
         command.AuthorId.Should().NotBeEmpty();
         command.PostId.Should().NotBeEmpty();
