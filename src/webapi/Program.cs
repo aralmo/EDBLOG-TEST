@@ -11,7 +11,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-        builder.Services.AddControllers(options => 
+        builder.Services.AddControllers(options =>
         {
             options.Filters.Add<ValidationFilter>();
         });
@@ -38,13 +38,9 @@ public class Program
             addAspNetInstrumentation: true);
 
         var app = builder.Build();
-        
-        // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
+
+        app.UseSwagger();
+        app.UseSwaggerUI();
 
         app.MapControllers();
         app.Run();
