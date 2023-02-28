@@ -34,15 +34,13 @@ public class NewPostController : Controller
 
         return Results.Accepted(value: new
         {
-            PostId = postId,
-            TraceId = Activity.Current?.TraceId
+            PostId = postId
         });
     }
 
     record NewPostResponse
     {
-        public string? TraceId { get; init; }
-        public string PostId { get; init; }
+        public required string PostId { get; init; }
     }
 
     //Contracts
