@@ -16,19 +16,31 @@ public class GetPostRequestConsumer :
 
     public async Task Consume(ConsumeContext<GetPostRequestContract> context)
     {
-        var newpostevt = await eventStoreClient.ReadStreamAsync(
-            Direction.Backwards,
-            $"post-{context.Message.PostId}",
-            StreamPosition.Start).FirstOrDefaultAsync(evt => evt.Event.EventType == "NewPost");
-
         response response;
-        if (newpostevt.Event != null)
-            response = new response()
+
+        //ToDo: tidy up this code
+        try
+        {
+            var newpostevt = await eventStoreClient.ReadStreamAsync(
+                Direction.Backwards,
+                $"post-{context.Message.PostId}",
+                StreamPosition.Start).FirstOrDefaultAsync(evt => evt.Event.EventType == "NewPost");
+
+            if (newpostevt.Event != null)
+                response = new response()
+                {
+                    Found = true,
+                    Post = JsonSerializer.Deserialize<post>(newpostevt.Event.Data.ToArray())
+                };
+            else
             {
-                Found = true,
-                Post = JsonSerializer.Deserialize<post>(newpostevt.Event.Data.ToArray())
-            };
-        else
+                response = new response()
+                {
+                    Found = false
+                };
+            }
+        }
+        catch (StreamNotFoundException)
         {
             response = new response()
             {
@@ -47,14 +59,14 @@ public class GetPostRequestConsumer :
     }
     record post : Post
     {
-        public Guid AuthorId {get;init;}
+        public Guid AuthorId { get; init; }
 
-        public string Title {get;init;}
+        public string Title { get; init; }
 
-        public string? Description {get;init;}
+        public string? Description { get; init; }
 
-        public string? Content {get;init;}
+        public string? Content { get; init; }
 
-        public Guid Identifier {get;init;}
+        public Guid Identifier { get; init; }
     }
 }

@@ -32,24 +32,25 @@ public class GetPostRequestConsumerShould
         //arrange
         var esClient = serviceProvider.GetRequiredService<EventStoreClient>();
         Guid postid = Guid.NewGuid();
-        
-        var stub = new 
-                {
-                    AuthorId = Guid.NewGuid(),
-                    Title = "some title",
-                    Description = "post description",
-                    Content = "post contents"
-                };
+
+        var stub = new
+        {
+            AuthorId = Guid.NewGuid(),
+            Title = "some title",
+            Description = "post description",
+            Content = "post contents"
+        };
 
         await esClient.AppendToStreamAsync($"post-{postid}", StreamState.Any, new[]
-        {            
+        {
             new EventData(Uuid.NewUuid(),"NewPost",
                 JsonSerializer.SerializeToUtf8Bytes(stub))
         });
-        
+
         var mock = new Mock<ConsumeContext<GetPostRequestContract>>();
-        
-        mock.Setup(m => m.Message).Returns(new contract(){
+
+        mock.Setup(m => m.Message).Returns(new contract()
+        {
             PostId = postid
         });
 
@@ -57,14 +58,36 @@ public class GetPostRequestConsumerShould
         await consumer.Consume(mock.Object);
 
         //todo: check content
-        
-        mock.Verify(m => m.RespondAsync<GetPostResponseContract>(It.IsAny<GetPostResponseContract>()),Times.Once);
-        GetPostResponseContract response =(GetPostResponseContract) mock.Invocations.Last().Arguments[0];
+
+        mock.Verify(m => m.RespondAsync<GetPostResponseContract>(It.IsAny<GetPostResponseContract>()), Times.Once);
+        GetPostResponseContract response = (GetPostResponseContract)mock.Invocations.Last().Arguments[0];
         response.Post.Should().BeEquivalentTo(stub);
+    }
+
+    [Fact]
+    public async void ReturnNotFound_IfStreamDoesntExists()
+    {
+        //arrange
+        Guid postid = Guid.NewGuid();
+        var mock = new Mock<ConsumeContext<GetPostRequestContract>>();
+
+        mock.Setup(m => m.Message).Returns(new contract()
+        {
+            PostId = postid
+        });
+
+        //act
+        await consumer.Consume(mock.Object);
+
+        //todo: check content
+
+        mock.Verify(m => m.RespondAsync<GetPostResponseContract>(It.IsAny<GetPostResponseContract>()), Times.Once);
+        GetPostResponseContract response = (GetPostResponseContract)mock.Invocations.Last().Arguments[0];
+        response.Found.Should().BeFalse();
     }
 
     record contract : GetPostRequestContract
     {
-        public Guid PostId {get;set;}
+        public Guid PostId { get; set; }
     }
 }
