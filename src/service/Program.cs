@@ -18,7 +18,8 @@ public class Program
                 //setup eventstoredb
                 var esConnString = hostContext.Configuration
                         .GetRequiredSection("EventStoreDB")
-                        .GetValue<string>("ConnectionString");
+                        .GetValue<string>("ConnectionString") 
+                        ?? throw new Exception("EventStoreDB connection string not found in configuration");
                         
                 services.AddEventStoreClient(esConnString);
                 
