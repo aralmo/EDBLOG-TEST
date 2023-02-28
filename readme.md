@@ -18,8 +18,8 @@ To run unit tests:
 run_tests.ps1 script runs unit tests for all projects
 
 To run integration tests:
-    - navigate to src/integration-tests
-    - run the test environment with 'docker compose up -d'
-    - run dotnet test
+   - navigate to src/integration-tests
+   - run the test environment with 'docker compose up -d'
+   - run dotnet test
 
 test coverage configuration for coverlet is to be done.
