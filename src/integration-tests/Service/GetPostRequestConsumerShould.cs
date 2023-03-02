@@ -65,6 +65,57 @@ public class GetPostRequestConsumerShould
     }
 
     [Fact]
+    public async void Aggregate_PostState()
+    {
+        //arrange
+        var esClient = serviceProvider.GetRequiredService<EventStoreClient>();
+        Guid postid = Guid.NewGuid();
+        await esClient.AppendToStreamAsync($"post-{postid}", StreamState.Any, new[]
+        {
+            new EventData(Uuid.NewUuid(),"NewPost",
+                JsonSerializer.SerializeToUtf8Bytes(new
+                {
+                    AuthorId = postid,
+                    Title = "some title",
+                    Description = "post description",
+                    Content = "post contents"
+                }))
+        });
+
+        await esClient.AppendToStreamAsync($"post-{postid}", StreamState.Any, new[]
+        {
+            new EventData(Uuid.NewUuid(),"NewPost",
+                JsonSerializer.SerializeToUtf8Bytes(new
+                {
+                    Title = "new title",
+                    Content = "new contents"
+                }))
+        });
+
+        var mock = new Mock<ConsumeContext<GetPostRequestContract>>();
+
+        mock.Setup(m => m.Message).Returns(new contract()
+        {
+            PostId = postid
+        });
+
+        //act
+        await consumer.Consume(mock.Object);
+
+        //todo: check content
+
+        mock.Verify(m => m.RespondAsync<GetPostResponseContract>(It.IsAny<GetPostResponseContract>()), Times.Once);
+        GetPostResponseContract response = (GetPostResponseContract)mock.Invocations.Last().Arguments[0];
+        response.Post.Should().BeEquivalentTo(new
+        {
+            AuthorId = postid,
+            Title = "new title",
+            Description = "post description",
+            Content = "new contents"
+        });
+    }
+
+    [Fact]
     public async void ReturnNotFound_IfStreamDoesntExists()
     {
         //arrange
