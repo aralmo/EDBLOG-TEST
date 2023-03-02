@@ -28,9 +28,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\webapi\webapi.csproj" />
-    <ProjectReference Include="..\core.abstractions\core.abstractions.csproj" />
-    <ProjectReference Include="..\domain\domain.csproj" />
+    <ProjectReference Include="..\..\webapi\webapi.csproj" />
+    <ProjectReference Include="..\..\core.abstractions\core.abstractions.csproj" />
+    <ProjectReference Include="..\..\domain\domain.csproj" />
   </ItemGroup>
 
 </Project>

@@ -11,10 +11,14 @@ namespace EDBlog.WebAPI.Controllers;
 public partial class PostController : Controller
 {
     private readonly IMediator mediator;
+    private readonly IRequestClient<GetPostRequestContract, GetPostResponseContract> getPostClient;
 
-    public PostController(IMediator mediator)
+    public PostController(
+        IMediator mediator,
+        IRequestClient<GetPostRequestContract, GetPostResponseContract> getPostClient)
     {
         this.mediator = mediator;
+        this.getPostClient = getPostClient;
     }
 
     [HttpPost, Route("post")]
@@ -59,12 +63,11 @@ public partial class PostController : Controller
     [HttpGet, Route("post/{postId}")]
     public async Task<IResult> GET(Guid postId)
     {
-        var result = await mediator
-            .Request<GetPostRequestContract, GetPostResponseContract>(
-                new GetPostRequest()
-                {
-                    PostId = postId
-                });
+        var result = await getPostClient
+            .Request(new GetPostRequest()
+            {
+                PostId = postId
+            });
 
         if (result.Found == false)
             return Results.NotFound();

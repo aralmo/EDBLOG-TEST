@@ -18,15 +18,22 @@ internal class MassTransitMediator : IMediator
     public Task Publish<TMessage>(TMessage message, CancellationToken cancellation) where TMessage : ICommand
     => publishEndpoint.Publish(message, cancellation);
 
-    public async Task<TResponse> Request<TRequest, TResponse>(TRequest message)
-        where TRequest : class, IRequestFor<TResponse>
-        where TResponse : class
+}
+
+internal class MassTransitRequestClient<TRequest, TResponse>: IRequestClient<TRequest, TResponse>
+    where TRequest : class, IRequestFor<TResponse>
+    where TResponse : class
+{
+    private readonly IRequestClient<TRequest> mtclient;
+
+    public MassTransitRequestClient(MassTransit.IRequestClient<TRequest> mtclient)
     {
-        var response = await serviceProvider
-            .CreateRequestClient<TRequest>()
-            .GetResponse<TResponse>(message);
-        
+        this.mtclient = mtclient;
+    }
+
+    public async Task<TResponse> Request(TRequest message)
+    {
+        var response = await mtclient.GetResponse<TResponse>(message);
         return response.Message;
-        
     }
 }

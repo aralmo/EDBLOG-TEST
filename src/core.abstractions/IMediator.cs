@@ -12,8 +12,12 @@ public interface IMediator
 
     Task Publish<TMessage>(TMessage message, CancellationToken cancellationToken)
         where TMessage : ICommand;
-
-    Task<TResponse> Request<TRequest, TResponse>(TRequest message)
-        where TRequest : class, IRequestFor<TResponse>
-        where TResponse : class;
 }
+
+public interface IRequestClient<TRequest, TResponse>
+    where TRequest : class, IRequestFor<TResponse>
+    where TResponse : class
+{
+    Task<TResponse> Request(TRequest message);
+}
+

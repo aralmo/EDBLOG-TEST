@@ -18,13 +18,13 @@ public class PostControllerGETShould
     [Fact]
     public async void ReturnNotFound_WhenPostDoesntExist()
     {
-        Mock<IMediator>? mediator = null;
+        Mock<IRequestClient<GetPostRequestContract, GetPostResponseContract>>? requestclient = null;
         using var client = clientFactory
             .Arrange(opt =>
             {
-                mediator = opt.MockRequired<IMediator>();
-                mediator
-                    .Setup(m => m.Request<GetPostRequestContract, GetPostResponseContract>(It.IsAny<GetPostRequestContract>()))
+                requestclient = opt.MockRequired<IRequestClient<GetPostRequestContract, GetPostResponseContract>>();
+                requestclient
+                    .Setup(m => m.Request(It.IsAny<GetPostRequestContract>()))
                     .ReturnsAsync(new fakeResponse());
             })
             .CreateClient();
@@ -37,7 +37,7 @@ public class PostControllerGETShould
     [Fact]
     public async void ReturnProperPostFormat_WhenExists()
     {
-        Mock<IMediator>? mediator = null;
+        Mock<IRequestClient<GetPostRequestContract, GetPostResponseContract>>? mediator = null;
         var fakeResponse = new fakeResponse()
         {
             Found = true,
@@ -53,9 +53,9 @@ public class PostControllerGETShould
         using var client = clientFactory
             .Arrange(opt =>
             {
-                mediator = opt.MockRequired<IMediator>();
+                mediator = opt.MockRequired<IRequestClient<GetPostRequestContract, GetPostResponseContract>>();
                 mediator
-                    .Setup(m => m.Request<GetPostRequestContract, GetPostResponseContract>(It.IsAny<GetPostRequestContract>()))
+                    .Setup(m => m.Request(It.IsAny<GetPostRequestContract>()))
                     .ReturnsAsync(fakeResponse);
             })
             .CreateClient();
@@ -79,13 +79,13 @@ public class PostControllerGETShould
     [Fact]
     public async void Use_MediatorRequest()
     {
-        Mock<IMediator>? mediator = null;
+        Mock<IRequestClient<GetPostRequestContract, GetPostResponseContract>>? mediator = null;
         using var client = clientFactory
             .Arrange(opt =>
             {
-                mediator = opt.MockRequired<IMediator>();
+                mediator = opt.MockRequired<IRequestClient<GetPostRequestContract, GetPostResponseContract>>();
                 mediator
-                    .Setup(m => m.Request<GetPostRequestContract, GetPostResponseContract>(It.IsAny<GetPostRequestContract>()))
+                    .Setup(m => m.Request(It.IsAny<GetPostRequestContract>()))
                     .ReturnsAsync(new fakeResponse()
                     {
                         Found = true,

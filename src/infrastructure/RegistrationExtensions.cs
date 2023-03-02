@@ -27,6 +27,7 @@ public static class RegistrationExtensions
             });
         });        
 
+        services.AddScoped(typeof(IRequestClient<,>), typeof(MassTransitRequestClient<,>));
         services.AddScoped<IMediator, MassTransitMediator>();
         return services;
     }

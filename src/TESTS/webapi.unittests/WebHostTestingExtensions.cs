@@ -38,10 +38,9 @@ where TEntryPoint : class
                 .ConfigureServices(services =>
                 {
                     var pubEP = services.FirstOrDefault(s => s.ServiceType == typeof(TInterface));
-                    if (pubEP == null)
-                        Assert.Fail($"No interface of type {typeof(TInterface).Name} was found");
-
-                    services.Remove(pubEP);
+                    if (pubEP != null)
+                        services.Remove(pubEP);
+                        
                     services.Add(new Microsoft.Extensions.DependencyInjection.ServiceDescriptor(typeof(TInterface),
                     _ => mock.Object,
                                 Microsoft.Extensions.DependencyInjection.ServiceLifetime.Transient));
