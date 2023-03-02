@@ -50,19 +50,19 @@ services:
       - zipkin
     environment:
       - ASPNETCORE_ENVIRONMENT=DevContainer
-  webapi:
-    build:
-      context: ./src
-      dockerfile: webapi-dockerfile
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      zipkin:
-        condition: service_healthy
-    links: 
-      - rabbitmq
-      - zipkin
-    ports:
-      - "8080:80"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=DevContainer
+  # webapi:
+  #   build:
+  #     context: ./src
+  #     dockerfile: webapi-dockerfile
+  #   depends_on:
+  #     rabbitmq:
+  #       condition: service_healthy
+  #     zipkin:
+  #       condition: service_healthy
+  #   links: 
+  #     - rabbitmq
+  #     - zipkin
+  #   ports:
+  #     - "8080:80"
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=DevContainer

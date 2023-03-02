@@ -98,7 +98,7 @@ public class PostControllerPATCHShould
             {
                 mediator = opt.MockRequired<IMediator>();
                 mediator
-                    .Setup(m => m.Publish<EditPostCommandContract>(It.IsAny<object>()))
+                    .Setup(m => m.Publish<EditPostCommandContract>(It.IsAny<EditPostCommandContract>()))
                     .Returns(Task.CompletedTask)
                     .Verifiable();
             })

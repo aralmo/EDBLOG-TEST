@@ -21,15 +21,16 @@ public partial class PostController : Controller
     public async Task<IResult> POST([FromBody] NewPostRequest request, CancellationToken cancellationToken)
     {
         Guid postId = Guid.NewGuid();
-
-        await mediator.Publish<CreatePostCommandContract>(new
-        {
-            AuthorId = request.AuthorId,
-            PostId = postId,
-            Title = request.post.Title,
-            Description = request.post.Description,
-            Content = request.post.Content
-        });
+        var activity = Activity.Current;
+        await mediator.Publish<CreatePostCommandContract>(
+            new CreatePostCommand()
+            {
+                AuthorId = request.AuthorId,
+                PostId = postId,
+                Title = request.post.Title,
+                Description = request.post.Description,
+                Content = request.post.Content
+            });
 
         return Results.Accepted(value: new
         {
@@ -43,13 +44,14 @@ public partial class PostController : Controller
         if (request.Title == null && request.Description == null && request.Content == null)
             return Results.NoContent();
 
-        await mediator.Publish<EditPostCommandContract>(new
-        {
-            PostId = postId,
-            Title = request.Title,
-            Description = request.Description,
-            Content = request.Content
-        });
+        await mediator.Publish<EditPostCommandContract>(
+            new EditPostCommand()
+            {
+                PostId = postId,
+                Title = request.Title,
+                Description = request.Description,
+                Content = request.Content
+            });
 
         return Results.Accepted();
     }
@@ -59,17 +61,17 @@ public partial class PostController : Controller
     {
         var result = await mediator
             .Request<GetPostRequestContract, GetPostResponseContract>(
-                new 
+                new GetPostRequest()
                 {
                     PostId = postId
                 });
 
         if (result.Found == false)
             return Results.NotFound();
-        
+
         if (result.Post == null)
             return Results.NoContent();
-        
+
         return Results.Ok(new
         {
             Title = result.Post.Title,
@@ -88,9 +90,9 @@ public partial class PostController : Controller
         string? Title,
         string? Description,
         string? Content);
-    
+
     public record NewPostRequest(Guid AuthorId, NewPost post);
-    
+
     public record NewPost(
         [MinLength(10), MaxLength(100)]
         string Title,

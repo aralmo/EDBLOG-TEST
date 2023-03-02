@@ -7,13 +7,13 @@ public interface IMediator
     /// <summary>
     /// Publishes a command into it's setup message bus or service.
     /// </summary>
-    Task Publish<TMessage>(object message)
+    Task Publish<TMessage>(TMessage message)
         where TMessage : ICommand;
 
-    Task Publish<TMessage>(object message, CancellationToken cancellationToken)
+    Task Publish<TMessage>(TMessage message, CancellationToken cancellationToken)
         where TMessage : ICommand;
 
-    Task<TResponse> Request<TRequest, TResponse>(object message)
+    Task<TResponse> Request<TRequest, TResponse>(TRequest message)
         where TRequest : class, IRequestFor<TResponse>
         where TResponse : class;
 }

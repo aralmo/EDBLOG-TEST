@@ -24,7 +24,7 @@ public class PostControllerGETShould
             {
                 mediator = opt.MockRequired<IMediator>();
                 mediator
-                    .Setup(m => m.Request<GetPostRequestContract, GetPostResponseContract>(It.IsAny<object>()))
+                    .Setup(m => m.Request<GetPostRequestContract, GetPostResponseContract>(It.IsAny<GetPostRequestContract>()))
                     .ReturnsAsync(new fakeResponse());
             })
             .CreateClient();
@@ -55,7 +55,7 @@ public class PostControllerGETShould
             {
                 mediator = opt.MockRequired<IMediator>();
                 mediator
-                    .Setup(m => m.Request<GetPostRequestContract, GetPostResponseContract>(It.IsAny<object>()))
+                    .Setup(m => m.Request<GetPostRequestContract, GetPostResponseContract>(It.IsAny<GetPostRequestContract>()))
                     .ReturnsAsync(fakeResponse);
             })
             .CreateClient();
@@ -85,7 +85,7 @@ public class PostControllerGETShould
             {
                 mediator = opt.MockRequired<IMediator>();
                 mediator
-                    .Setup(m => m.Request<GetPostRequestContract, GetPostResponseContract>(It.IsAny<object>()))
+                    .Setup(m => m.Request<GetPostRequestContract, GetPostResponseContract>(It.IsAny<GetPostRequestContract>()))
                     .ReturnsAsync(new fakeResponse()
                     {
                         Found = true,

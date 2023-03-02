@@ -84,7 +84,7 @@ public class PostControllerPOSTShould
             {
                 mediator = opt.MockRequired<IMediator>();
                 mediator
-                    .Setup(m => m.Publish<CreatePostCommandContract>(It.IsAny<object>()))
+                    .Setup(m => m.Publish<CreatePostCommandContract>(It.IsAny<CreatePostCommandContract>()))
                     .Returns(Task.CompletedTask)
                     .Verifiable();
             })
