@@ -8,7 +8,7 @@ using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
-namespace IntegrationTests.Service;
+namespace Integration.Service;
 
 public class GetPostRequestConsumerShould
 {
