@@ -12,13 +12,13 @@ internal class MassTransitMediator : IMediator
         this.serviceProvider = provider;
     }
 
-    public Task Publish<TMessage>(TMessage message) where TMessage : ICommand
+    public Task Publish<TMessage>(object message) where TMessage : ICommand
     => publishEndpoint.Publish(message);
 
-    public Task Publish<TMessage>(TMessage message, CancellationToken cancellation) where TMessage : ICommand
+    public Task Publish<TMessage>(object message, CancellationToken cancellation) where TMessage : ICommand
     => publishEndpoint.Publish(message, cancellation);
 
-    public async Task<TResponse> Request<TRequest, TResponse>(TRequest message)
+    public async Task<TResponse> Request<TRequest, TResponse>(object message)
         where TRequest : class, IRequestFor<TResponse>
         where TResponse : class
     {

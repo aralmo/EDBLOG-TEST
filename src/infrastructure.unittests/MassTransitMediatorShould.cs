@@ -22,7 +22,7 @@ public class MassTransitMediatorShould
         IMediator mediator = new MassTransitMediator(publishEndpointMock.Object, null!);
 
         //act and verify
-        await mediator.Publish(new FakeCmd());
+        await mediator.Publish<FakeCmd>(new FakeCmd());
         publishEndpointMock.Verify();
     }
 
@@ -41,7 +41,7 @@ public class MassTransitMediatorShould
         IMediator mediator = new MassTransitMediator(publishEndpointMock.Object, null!);
 
         //act and verify
-        await mediator.Publish(new FakeCmd(),ctoken);
+        await mediator.Publish<FakeCmd>(new FakeCmd(),ctoken);
         publishEndpointMock.Verify();
     }
 

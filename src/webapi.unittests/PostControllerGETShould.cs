@@ -11,7 +11,7 @@ using Moq;
 namespace WebAPI.UnitTests;
 
 [Trait("type", "unit")] //no external dependencies, marking as unit
-public class GetPostControllerShould
+public class PostControllerGETShould
 {
     private readonly WebApplicationFactory<EDBlog.WebAPI.Program> clientFactory = new();
 
@@ -24,7 +24,7 @@ public class GetPostControllerShould
             {
                 mediator = opt.MockRequired<IMediator>();
                 mediator
-                    .Setup(m => m.Request<GetPostRequestContract, GetPostResponseContract>(It.IsAny<GetPostRequestContract>()))
+                    .Setup(m => m.Request<GetPostRequestContract, GetPostResponseContract>(It.IsAny<object>()))
                     .ReturnsAsync(new fakeResponse());
             })
             .CreateClient();
@@ -55,7 +55,7 @@ public class GetPostControllerShould
             {
                 mediator = opt.MockRequired<IMediator>();
                 mediator
-                    .Setup(m => m.Request<GetPostRequestContract, GetPostResponseContract>(It.IsAny<GetPostRequestContract>()))
+                    .Setup(m => m.Request<GetPostRequestContract, GetPostResponseContract>(It.IsAny<object>()))
                     .ReturnsAsync(fakeResponse);
             })
             .CreateClient();
@@ -85,7 +85,7 @@ public class GetPostControllerShould
             {
                 mediator = opt.MockRequired<IMediator>();
                 mediator
-                    .Setup(m => m.Request<GetPostRequestContract, GetPostResponseContract>(It.IsAny<GetPostRequestContract>()))
+                    .Setup(m => m.Request<GetPostRequestContract, GetPostResponseContract>(It.IsAny<object>()))
                     .ReturnsAsync(new fakeResponse()
                     {
                         Found = true,

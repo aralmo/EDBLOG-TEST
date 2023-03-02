@@ -9,7 +9,7 @@ using Moq;
 namespace WebAPI.UnitTests;
 
 [Trait("type", "unit")] //no external dependencies, marking as unit
-public class NewPostControllerShould
+public class PostControllerPOSTShould
 {
     private readonly WebApplicationFactory<EDBlog.WebAPI.Program> clientFactory = new();
 
@@ -33,7 +33,6 @@ public class NewPostControllerShould
         var content = await result.Content.ReadAsStringAsync();
         result.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
         content.Should().Contain(".AuthorId"); //
-
     }
 
     [Fact]
@@ -85,16 +84,17 @@ public class NewPostControllerShould
             {
                 mediator = opt.MockRequired<IMediator>();
                 mediator
-                    .Setup(m => m.Publish<CreatePostCommandContract>(It.IsAny<CreatePostCommandContract>()))
+                    .Setup(m => m.Publish<CreatePostCommandContract>(It.IsAny<object>()))
                     .Returns(Task.CompletedTask)
                     .Verifiable();
             })
             .CreateClient();
 
+        var authorid = Guid.NewGuid();
         //act and assert
         await client.PostAsync("post", JsonFor(new
         {
-            AuthorId = Guid.NewGuid(),
+            AuthorId = authorid,
             Post = new
             {
                 Title = "new post title",
@@ -106,12 +106,11 @@ public class NewPostControllerShould
         mediator.Verify();
 
         //get the published command and ensures it's single invocation
-        var command = (CreatePostCommandContract)mediator.Invocations.Single(i => i.IsVerified).Arguments[0];
+        var command = mediator.Invocations.Single(i => i.IsVerified).Arguments[0];
 
-        command.AuthorId.Should().NotBeEmpty();
-        command.PostId.Should().NotBeEmpty();
         command.Should().BeEquivalentTo(new
         {
+            AuthorId = authorid,
             Title = "new post title",
             Description = "new post description",
             Content = "new post content"

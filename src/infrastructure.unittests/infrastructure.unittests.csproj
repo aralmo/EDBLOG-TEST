@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="fluentassertions" Version="6.10.0" />
     <PackageReference Include="masstransit" Version="8.0.13" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
     <PackageReference Include="moq" Version="4.18.4" />

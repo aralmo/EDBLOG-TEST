@@ -26,6 +26,11 @@ public class GetPostRequestConsumer :
                 $"post-{context.Message.PostId}",
                 StreamPosition.Start).FirstOrDefaultAsync(evt => evt.Event.EventType == "NewPost");
 
+            var x = eventStoreClient.ReadStreamAsync(
+                Direction.Backwards,
+                $"post-{context.Message.PostId}",
+                StreamPosition.Start);
+
             if (newpostevt.Event != null)
                 response = new response()
                 {
