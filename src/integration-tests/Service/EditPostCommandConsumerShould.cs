@@ -10,62 +10,21 @@ using Moq;
 
 namespace Integration.Service;
 
-public class CreatePostCommandConsumerShould
+public class EditPostCommandConsumerShould
 {
     ServiceProvider serviceProvider;
-    CreatePostCommandConsumer consumer
+    EditPostCommandConsumer consumer
         => serviceProvider
-            .GetRequiredService<CreatePostCommandConsumer>();
+            .GetRequiredService<EditPostCommandConsumer>();
 
-    public CreatePostCommandConsumerShould()
+    public EditPostCommandConsumerShould()
     {
         var services = new ServiceCollection();
         //run docker compose up in this project root to start dependencies.
         services.AddEventStoreClient("esdb://admin:changeit@localhost:2213?tls=false");
         services.AddLogging();
-        services.AddTransient<CreatePostCommandConsumer>();
+        services.AddTransient<EditPostCommandConsumer>();
         serviceProvider = services.BuildServiceProvider();
-    }
-
-    [Fact]
-    public async void CreateEvent_InAuthorPostsStream()
-    {
-        //Arrange
-        var esClient = serviceProvider.GetRequiredService<EventStoreClient>();
-        var contract = new Contract()
-        {
-            AuthorId = Guid.NewGuid(),
-            PostId = Guid.NewGuid(),
-            Title = "new post title",
-            Description = "new post description",
-            Content = "new post content"
-        };
-
-        //Act
-        var mock = new Mock<ConsumeContext<CreatePostCommandContract>>();
-        mock.Setup(m => m.Message).Returns(contract);
-
-        await consumer.Consume(mock.Object);
-
-        //Assert
-        var authorReader = esClient.ReadStreamAsync(
-            Direction.Forwards,
-            $"authorposts-{contract.AuthorId}",
-            StreamPosition.Start);
-
-        // the author stream tracks author posts
-        var authorStreamEvent = await authorReader.FirstAsync();
-        authorStreamEvent.Should().NotBeNull();
-        authorStreamEvent.Event?.EventType?.Should().Be("NewPost");
-
-        // check the contents
-        Encoding.UTF8
-            .GetString(authorStreamEvent.Event!.Data.ToArray())
-            .Should()
-            .Be(JsonSerializer.Serialize(new
-            {
-                contract.PostId
-            }));
     }
 
     [Fact]
@@ -75,7 +34,6 @@ public class CreatePostCommandConsumerShould
         var esClient = serviceProvider.GetRequiredService<EventStoreClient>();
         var contract = new Contract()
         {
-            AuthorId = Guid.NewGuid(),
             PostId = Guid.NewGuid(),
             Title = "new post title",
             Description = "new post description",
@@ -83,7 +41,7 @@ public class CreatePostCommandConsumerShould
         };
 
         //Act
-        var mock = new Mock<ConsumeContext<CreatePostCommandContract>>();
+        var mock = new Mock<ConsumeContext<EditPostCommandContract>>();
         mock.Setup(m => m.Message).Returns(contract);
 
         await consumer.Consume(mock.Object);
@@ -95,7 +53,7 @@ public class CreatePostCommandConsumerShould
 
         var postStreamEvent = await postReader.FirstAsync();
         postStreamEvent.Should().NotBeNull();
-        postStreamEvent.Event?.EventType?.Should().Be("NewPost");
+        postStreamEvent.Event?.EventType?.Should().Be("EditPost");
 
         // check the contents
         Encoding.UTF8
@@ -103,7 +61,6 @@ public class CreatePostCommandConsumerShould
             .Should()
             .Be(JsonSerializer.Serialize(new
             {
-                contract.AuthorId,
                 contract.Title,
                 contract.Description,
                 contract.Content
@@ -111,10 +68,8 @@ public class CreatePostCommandConsumerShould
 
     }
 
-    class Contract : CreatePostCommandContract
+    class Contract : EditPostCommandContract
     {
-        public Guid AuthorId { get; set; }
-
         public Guid PostId { get; set; }
 
         public required string Title { get; init; }
