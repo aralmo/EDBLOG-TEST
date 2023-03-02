@@ -27,9 +27,7 @@ public class CreatePostCommandConsumer : IConsumer<CreatePostCommandContract>
                         Uuid.NewUuid(),
                         NEWPOST_EVENT_NAME,
                         JsonSerializer.SerializeToUtf8Bytes(new {
-                            context.Message.PostId,
-                            context.Message.Title,
-                            context.Message.Description
+                            context.Message.PostId
                         })
                     )}),
 

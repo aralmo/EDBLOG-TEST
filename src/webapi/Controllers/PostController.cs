@@ -17,23 +17,6 @@ public partial class PostController : Controller
         this.mediator = mediator;
     }
 
-    [HttpPatch, Route("post/{postId}")]
-    public async Task<IResult> PATCH(Guid postId, [FromBody] EditPostRequest request, CancellationToken cancellationToken)
-    {
-        if (request.Title == null && request.Description == null && request.Content == null)
-            return Results.NoContent();
-
-        await mediator.Publish<EditPostCommandContract>(new
-        {
-            PostId = postId,
-            Title = request.Title,
-            Description = request.Description,
-            Content = request.Content
-        });
-
-        return Results.Accepted();
-    }
-
     [HttpPost, Route("post")]
     public async Task<IResult> POST([FromBody] NewPostRequest request, CancellationToken cancellationToken)
     {
@@ -52,6 +35,23 @@ public partial class PostController : Controller
         {
             PostId = postId
         });
+    }
+
+    [HttpPatch, Route("post/{postId}")]
+    public async Task<IResult> PATCH(Guid postId, [FromBody] EditPostRequest request, CancellationToken cancellationToken)
+    {
+        if (request.Title == null && request.Description == null && request.Content == null)
+            return Results.NoContent();
+
+        await mediator.Publish<EditPostCommandContract>(new
+        {
+            PostId = postId,
+            Title = request.Title,
+            Description = request.Description,
+            Content = request.Content
+        });
+
+        return Results.Accepted();
     }
 
     [HttpGet, Route("post/{postId}")]

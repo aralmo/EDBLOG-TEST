@@ -1,8 +1,10 @@
+using System.Diagnostics;
 using System.Text.Json;
 using EDBlog.Domain.Contracts;
 using EDBlog.Domain.Entities;
 using EventStore.Client;
 using MassTransit;
+using static EventStore.Client.EventStoreClient;
 
 public class GetPostRequestConsumer :
     IConsumer<GetPostRequestContract>
@@ -16,45 +18,66 @@ public class GetPostRequestConsumer :
 
     public async Task Consume(ConsumeContext<GetPostRequestContract> context)
     {
-        response response;
+        response response = new response(){};
 
         //ToDo: tidy up this code
         try
         {
-            var newpostevt = await eventStoreClient.ReadStreamAsync(
-                Direction.Backwards,
-                $"post-{context.Message.PostId}",
-                StreamPosition.Start).FirstOrDefaultAsync(evt => evt.Event.EventType == "NewPost");
+            var post = await eventStoreClient
+                .ReadStreamAsync(
+                    Direction.Forwards,
+                    $"post-{context.Message.PostId}",
+                    StreamPosition.Start)
 
-            var x = eventStoreClient.ReadStreamAsync(
-                Direction.Backwards,
-                $"post-{context.Message.PostId}",
-                StreamPosition.Start);
-
-            if (newpostevt.Event != null)
+                    .AggregateAsync(new PostAggregator(), (acc, x) =>
+                    {
+                        var doc = JsonSerializer.Deserialize<PostAggregator>(x.Event.Data.ToArray());
+                        return acc with
+                        {
+                            AuthorId = doc?.AuthorId ?? acc.AuthorId,
+                            Content = doc?.Content ?? acc.Content,
+                            Description = doc?.Description ?? acc.Description,
+                            Title = doc?.Title ?? acc.Title
+                        };
+                    });
+            
+            if (post != null)
                 response = new response()
                 {
                     Found = true,
-                    Post = JsonSerializer.Deserialize<post>(newpostevt.Event.Data.ToArray())
+                    Post = new post()
+                    {
+                        AuthorId = post.AuthorId??Guid.Empty,
+                        Title = post.Title??string.Empty,
+                        Description = post.Description,
+                        Content = post.Content
+                    }
                 };
-            else
-            {
-                response = new response()
-                {
-                    Found = false
-                };
-            }
         }
-        catch (StreamNotFoundException)
+        catch (StreamNotFoundException ex)
         {
-            response = new response()
-            {
-                Found = false
-            };
+            Activity.Current.AddException(ex, $"post stream not found {context.Message.PostId}");
         }
 
         await context.RespondAsync<GetPostResponseContract>(response);
     }
+
+    enum PostEvents
+    {
+        Unknown,
+        NewPost,
+        EditPost
+    }
+
+
+    record PostAggregator()
+    {
+        public Guid? AuthorId { get; init; }
+        public string? Title { get; init; }
+        public string? Description { get; init; }
+        public string? Content { get; init; }
+    }
+
 
     record response : GetPostResponseContract
     {
